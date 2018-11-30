@@ -8,7 +8,7 @@ WINDOW_WIDTH = 800
 WINDOW_HEIGHT = 480
 CELL_WIDTH = 8
 CELL_HEIGHT = 8
-
+RUN = True
 window = pyglet.window.Window(width = WINDOW_WIDTH, height = WINDOW_HEIGHT)
 
 class Cell:
@@ -42,7 +42,14 @@ class CellGrid:
         Initializes a grid
         '''
         self.width, self.height = width, height
-        self.grid = np.full((height,width), Cell.EMPTY )
+        #self.grid = np.full((height,width), Cell.EMPTY )
+        self.fill_grid_empty()
+        
+    def fill_grid_empty(self):
+        '''
+        Sets every cell in the grid to "EMPTY"
+        '''
+        self.grid = np.full((self.height,self.width), Cell.EMPTY )
 
     def limit_x_y(self,x,y,wraparound = False):
         _x, _y = x, y
@@ -151,6 +158,16 @@ def on_draw():
     window.clear()
     TEST.draw()
 
+@window.event
+def on_key_press(symbol, modifiers):
+    global RUN
+    if symbol == key.P:
+        RUN = not RUN
+    elif symbol == key.R:
+        TEST.fill_grid_empty()
+    pass
+    
+    
 @window.event        
 def on_mouse_press(x, y, button, modifiers):
     _x, _y = x // CELL_WIDTH, y // CELL_HEIGHT
@@ -159,9 +176,10 @@ def on_mouse_press(x, y, button, modifiers):
     elif button == mouse.RIGHT:
         TEST.set_cell(_x,_y,Cell.EMPTY)
            
-           
 def update(t):
-    TEST.update()
+    global RUN
+    if RUN:
+        TEST.update()
 
             
 pyglet.clock.schedule_interval(update, 1/120)
