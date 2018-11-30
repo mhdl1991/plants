@@ -153,10 +153,12 @@ def on_draw():
 
 @window.event        
 def on_mouse_press(x, y, button, modifiers):
+    _x, _y = x // CELL_WIDTH, y // CELL_HEIGHT
     if button == mouse.LEFT:
-        _x = x // CELL_WIDTH
-        _y = y // CELL_HEIGHT
         TEST.set_cell(_x, _y, Cell.YOUNG)
+    elif button == mouse.RIGHT:
+        TEST.set_cell(_x,_y,Cell.EMPTY)
+           
            
 def update(t):
     TEST.update()
