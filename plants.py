@@ -5,7 +5,7 @@ import random
 from pyglet.window import mouse, key
 
 WINDOW_WIDTH = 800
-WINDOW_HEIGHT = 480
+WINDOW_HEIGHT = 800
 CELL_WIDTH = 8
 CELL_HEIGHT = 8
 RUN = True
@@ -68,7 +68,7 @@ class CellGrid:
         
     def set_cell(self, x, y, new_state):
         _x, _y = self.limit_x_y(x,y)
-        self.grid[_y][_x] = new_state
+        self.grid[int(_y)][int(_x)] = new_state
     
     def get_neighbors_number(self, x, y, neighborhood = Cell.EXPANDED_NEIGHBORHOOD, search_for = [Cell.YOUNG, Cell.YOUNG_2, Cell.MATURE, Cell.OLD]):
         '''
@@ -95,7 +95,7 @@ class CellGrid:
                 current_cell = self.grid[y][x]
                 #growth of overall tree
                 if current_cell in [Cell.YOUNG, Cell.YOUNG_2, Cell.MATURE]:
-                    if self.get_neighbors_number(x,y) in [0,1,2]:
+                    if self.get_neighbors_number(x,y) in [0,1]:
                         grow_neighborhood = Cell.MOORE_NEIGBHORHOOD_GROW
                         
                         if current_cell in [Cell.YOUNG, Cell.YOUNG_2]:
@@ -106,7 +106,8 @@ class CellGrid:
                         if valid_grow_cells:
                             random.shuffle(valid_grow_cells)
                             x_choose, y_choose = random.choice( valid_grow_cells )
-                            new_grid[y_choose][x_choose] = random.choice((Cell.EMPTY, Cell.YOUNG))
+                            new_grid[y_choose][x_choose] = random.choice((Cell.EMPTY,Cell.YOUNG, Cell.EMPTY, Cell.YOUNG, Cell.YOUNG))
+                        
                         
                     new_grid[y][x] = current_cell + 1
                         
@@ -114,7 +115,7 @@ class CellGrid:
                 if current_cell in [Cell.OLD]:
                     if self.get_neighbors_number(x,y) in [0,1]:
                         #valid_grow_cells = [(i,j) for (i,j) in self.get_coords_neighbors(x,y,Cell.MOORE_NEIGBHORHOOD_GROW) if self.get_neighbors_number(i,j) in [0,1] and self.get_cell(i,j) in [Cell.EMPTY] ]
-                        valid_grow_cells = self.get_valid_grow_cells(x, y, check_neighborhood = Cell.MOORE_NEIGBHORHOOD_GROW_VERTICAL_BIAS, neighbor_limit = [0,1])
+                        valid_grow_cells = self.get_valid_grow_cells(x, y, check_neighborhood = Cell.MOORE_NEIGBHORHOOD_GROW_VERTICAL_BIAS, neighbor_limit = [0,1,2])
                         if valid_grow_cells:
                             random.shuffle(valid_grow_cells)
                             x_choose, y_choose = random.choice(valid_grow_cells)
@@ -136,7 +137,7 @@ class CellGrid:
             
         self.grid = new_grid
      
-    def draw(self):
+    def draw_old(self):
         '''
         Draw each cell in the grid
         '''
@@ -149,7 +150,24 @@ class CellGrid:
                     X1,Y1 = x * CELL_WIDTH, y * CELL_HEIGHT,
                     X2,Y2 = X1 + CELL_WIDTH,Y1 + CELL_HEIGHT
                     pyglet.graphics.draw(4 ,pyglet.gl.GL_POLYGON, ('v2i',[X1,Y1, X2,Y1, X2,Y2, X1,Y2] ), ('c3B', draw_color * 4 ) )
-                    
+                
+    
+    def draw(self):
+        '''
+        Draw each cell in the grid
+        '''
+        batch = pyglet.graphics.Batch()
+        rects = []
+        for y in range(self.height):
+            for x in range(self.width): 
+                current_cell = self.get_cell(x, y)
+                if current_cell != Cell.EMPTY:
+                    r, g, b = Cell.COLORS[current_cell]
+                    X1, Y1 = x * CELL_WIDTH, y * CELL_HEIGHT
+                    rects.append(pyglet.shapes.Rectangle(X1, Y1, CELL_WIDTH, CELL_HEIGHT, color=(r, g, b), batch=batch) )
+        batch.draw()
+        
+                
                     
 TEST = CellGrid()
 
@@ -162,8 +180,10 @@ def on_draw():
 def on_key_press(symbol, modifiers):
     global RUN
     if symbol == key.P:
+        # pause
         RUN = not RUN
     elif symbol == key.R:
+        # reset
         TEST.fill_grid_empty()
     pass
     
